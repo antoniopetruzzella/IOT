@@ -47,17 +47,26 @@ void setup() {
 
 void loop() {
     // put your main code here, to run repeatedly:
-     delay(10000);
+     delay(300000);
      String temperatura(dht.readTemperature());
-     float umidita=dht.readHumidity();
+     String umidita(dht.readHumidity());
      //Serial.println(dht.readTemperature(),6,2,celsiusTemp);
      Serial.println(temperatura);  
-     Serial.println(dht.readTemperature());     
+     Serial.println(umidita);     
       HTTPClient http;
       
-      http.begin("http://www.heritagexperience.com/raspberryWS/raspberryloaddataWS.php?action=insertdata&descrizione=temperatura-camera&valueVarchar="+temperatura);
+      http.begin("http://www.heritagexperience.com/raspberryWS/raspberryloaddataWS.php?action=insertdata&descrizione=temperatura-camera&valueFloat="+temperatura);
       int httpCode = http.GET(); 
       if (httpCode > 0) { //Check the returning code
+ 
+      String payload = http.getString();   //Get the request response payload
+      Serial.println(payload);                     //Print the response payload
+ 
+    }
+     http.end(); 
+     http.begin("http://www.heritagexperience.com/raspberryWS/raspberryloaddataWS.php?action=insertdata&descrizione=umidita-camera&valueFloat="+umidita);
+      int httpCode2 = http.GET(); 
+      if (httpCode2 > 0) { //Check the returning code
  
       String payload = http.getString();   //Get the request response payload
       Serial.println(payload);                     //Print the response payload
