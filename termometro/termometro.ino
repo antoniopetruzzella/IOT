@@ -11,7 +11,8 @@
 // DHT Sensor
 const int DHTPin = 5;
 // Initialize DHT sensor.
-DHT dht(DHTPin, DHTTYPE);
+//DHT dht(DHTPin, DHTTYPE);
+DHT dht(D4, DHTTYPE);
 static char celsiusTemp[7];
 
 
@@ -32,8 +33,8 @@ void setup() {
     //if it does not connect it starts an access point with the specified name
     //here  "AutoConnectAP"
     //and goes into a blocking loop awaiting configuration
-        wifiManager.autoConnect("AutoConnectAP");
-        //WiFi.begin("WebPocket-E036","antonio71");
+        //wifiManager.autoConnect("AutoConnectAP");
+        WiFi.begin("WebPocket-E036","antonio71");
     //or use this for auto generated name ESP + ChipID
     //wifiManager.autoConnect();
 
@@ -47,7 +48,7 @@ void setup() {
 
 void loop() {
     // put your main code here, to run repeatedly:
-     delay(300000);
+     delay(5000);
      String temperatura(dht.readTemperature());
      String umidita(dht.readHumidity());
      //Serial.println(dht.readTemperature(),6,2,celsiusTemp);
