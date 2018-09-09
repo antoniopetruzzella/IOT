@@ -13,25 +13,29 @@
 #define OLED_RESET -1
 Adafruit_SSD1306 display(-1);
 String codiceMW;
+String utente;
+HTTPClient httpclient;
 
 
 void setup()
 {
   EEPROM.begin(10);
-  EEPROM.write(0,0);//RESET FORZATO!!
+  //EEPROM.write(0,0);//RESET FORZATO!!
   Serial.begin(9600);
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C, false);
   if(getConnection()){
-    if(!checkRegistration()){
-      scriviCodice();
-      codiceMW=leggiCodice();
-      while(!verificaCodice(codiceMW)){
-        
-      }
+    if(!checkRegistration()){//VERIFICA CHE VI SIA UN CODICE NELLA EEPROM, ALTRIMENTI
+      scriviCodice();// LO GENERA
+      codiceMW=leggiCodice();//LO LEGGE
+      display.setCursor(10,30);
+      display.println("codice: "+codiceMW);
+      display.display();
+      utente=verificaCodice(codiceMW);
     }
     codiceMW=leggiCodice();
+    utente=verificaCodice(codiceMW);
     display.setCursor(10,30);
-    display.println("codice: "+codiceMW);
+    display.println("codice: "+codiceMW+" utente "+utente);
     display.display();   
    
   }
@@ -72,6 +76,10 @@ bool getConnection(){
     wifiManager.autoConnect("AutoConnectAP");
     Serial.println("connected...yeey :)");
     Serial.println(WiFi.localIP()); 
+  display.clearDisplay();
+  display.setCursor(10,20);
+  display.println("connected");
+  display.display();   
     return true; 
 }
 void configModeCallback (WiFiManager *myWiFiManager) {
@@ -122,8 +130,18 @@ bool checkRegistration(){
   }
 }
 
-bool verificaCodice(String codiceMW){
+String verificaCodice(String codiceMW){
 
-  return true;
+  String utente="";
+  while(utente==""){
+  httpclient.begin("http://www.heritagexperience.com/marketwall/checkmw.php?id_mw="+codiceMW);
+  
+  int httpcode=httpclient.GET();
+  utente=httpclient.getString();
+  Serial.println(utente);
+  httpclient.end();
+  
+  }
+  return utente;
 }
 
