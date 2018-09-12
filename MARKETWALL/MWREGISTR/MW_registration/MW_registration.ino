@@ -28,14 +28,15 @@ void setup()
       scriviCodice();// LO GENERA
       codiceMW=leggiCodice();//LO LEGGE
       display.setCursor(10,30);
-      display.println("codice: "+codiceMW);
+      display.println("codice da inserire: "+codiceMW);
       display.display();
       utente=verificaCodice(codiceMW);
     }
     codiceMW=leggiCodice();
     utente=verificaCodice(codiceMW);
+    display.clearDisplay();
     display.setCursor(10,30);
-    display.println("codice: "+codiceMW+" utente "+utente);
+    display.println("MW ID: "+codiceMW+" utente "+utente);
     display.display();   
    
   }
@@ -133,12 +134,12 @@ bool checkRegistration(){
 String verificaCodice(String codiceMW){
 
   String utente="";
-  while(utente==""){
+  while(utente.length()<2){
   httpclient.begin("http://www.heritagexperience.com/marketwall/checkmw.php?id_mw="+codiceMW);
   
   int httpcode=httpclient.GET();
   utente=httpclient.getString();
-  Serial.println(utente);
+  Serial.println("id= "+utente+" URL= "+"http://www.heritagexperience.com/marketwall/checkmw.php?id_mw="+codiceMW+" http code:"+String(httpcode)+" len: "+utente.length());
   httpclient.end();
   
   }
