@@ -53,19 +53,29 @@ void loop()
   //display.setCursor(10,20);
   //display.println("connected");
   //display.display();
-  if(foundnewmcpos!=0){
-     set_led_status=1;  
+  String* newmc=foundnewmc();
+  int newmcpos;
+  String newmcprod;
+  Serial.println(newmc[0]);
+  if(newmc[0].toInt()!=0){
+      int led=0;
+      newmcpos=newmc[0].toInt();
+      newmcprod=newmc[1];
+      if(newmcpos==1){
+        led=D7;
+      }
+    digitalWrite(led,!digitalRead(led));
+    display.clearDisplay();
+    display.setCursor(10,10);
+    display.println("posiziona il nuovo MC presso il led");
+    display.setCursor(10,30);
+    display.println("prodotto:"+newmcprod);
+    
+    display.display(); 
   }else{
-    set_led_status=0;
+    
   }
 
-  if(set_led_status==1){
-  int led=0;
-  if(foundnewmcpos()==1){
-          led=D7;
-      }
-  digitalWrite(led,!digitalRead(led));
-  }
   
 }else{
 
@@ -162,8 +172,10 @@ String verificaCodice(String codiceMW){
   return utente;
 }
 
-int foundnewmcpos(){
-
-  return 1;
+String* foundnewmc(){
+String* valore=new String[2];
+valore[0]="1";
+valore[1]="acqua Lete";
+return valore;
 }
 
