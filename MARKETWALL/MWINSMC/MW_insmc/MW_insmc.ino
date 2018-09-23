@@ -1,3 +1,7 @@
+
+
+#include <ArduinoJson.h>
+
 #include <EEPROM.h>
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 //needed for library
@@ -17,9 +21,11 @@ String utente;
 HTTPClient httpclient;
 int ledpin;
 int set_led_status;
+DynamicJsonBuffer jsonBuffer;
+
 void setup()
 {
-  EEPROM.begin(10);
+   EEPROM.begin(10);
   //EEPROM.write(0,0);//RESET FORZATO!!
   Serial.begin(9600);
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C, false);
@@ -46,36 +52,11 @@ void setup()
 
 }
 
-void loop()
-{
+void loop() {
+  display.clearDisplay();
   if (WiFi.status() == WL_CONNECTED) {
-  //display.clearDisplay();
-  //display.setCursor(10,20);
-  //display.println("connected");
-  //display.display();
-  String* newmc=foundnewmc();
-  int newmcpos;
-  String newmcprod;
-  Serial.println(newmc[0]);
-  if(newmc[0].toInt()!=0){
-      int led=0;
-      newmcpos=newmc[0].toInt();
-      newmcprod=newmc[1];
-      if(newmcpos==1){
-        led=D7;
-      }
-    digitalWrite(led,!digitalRead(led));
-    display.clearDisplay();
-    display.setCursor(10,10);
-    display.println("posiziona il nuovo MC presso il led");
-    display.setCursor(10,30);
-    display.println("prodotto:"+newmcprod);
-    
-    display.display(); 
-  }else{
-    
-  }
-
+  digitalWrite(D7,0);
+  foundNewmc();
   
 }else{
 
@@ -85,7 +66,7 @@ void loop()
   display.display();
 }
     
- delay(1000);
+ //delay(1000);
 
 }
 
@@ -97,12 +78,12 @@ bool getConnection(){
     display.clearDisplay();
     display.println("...connecting...");
     display.display();
-    Serial.println("stop displaying");
+    //Serial.println("stop displaying");
     WiFiManager wifiManager;
     wifiManager.setAPCallback(configModeCallback);
     wifiManager.autoConnect("AutoConnectAP");
-    Serial.println("connected...yeey :)");
-    Serial.println(WiFi.localIP()); 
+    //Serial.println("connected...yeey :)");
+    //Serial.println(WiFi.localIP()); 
   display.clearDisplay();
   display.setCursor(10,20);
   display.println("connected");
@@ -119,17 +100,17 @@ void configModeCallback (WiFiManager *myWiFiManager) {
 
 void scriviCodice(){
   int a=random(1000000);
-  Serial.println("codice scritto "+String(a));
+  //Serial.println("codice scritto "+String(a));
   String str=String(a);
   char codice[8];
   String zeri="0000000";
   str=zeri.substring(0,7-str.length())+str;
-  Serial.println("str= "+str);
+  //Serial.println("str= "+str);
   str.toCharArray(codice,8);
   EEPROM.write(0,1);
   for(int i=0;i<7;i++){
   EEPROM.write(i+1,codice[i]);
-  Serial.println(String(i)+" - "+ codice[i]);
+  //Serial.println(String(i)+" - "+ codice[i]);
   
   }
 EEPROM.commit();
@@ -139,20 +120,20 @@ String leggiCodice(){
   char buf[8];
   for (int ii=0;ii<7;ii++){
   buf[ii]=(char)EEPROM.read(ii+1);
-  Serial.println(String(ii)+" - "+buf[ii]);
+  //Serial.println(String(ii)+" - "+buf[ii]);
   }
   String codice_finale=(String)buf;
-  Serial.println("codice letto: "+codice_finale.substring(0,7));
+  //Serial.println("codice letto: "+codice_finale.substring(0,7));
   return codice_finale.substring(0,7);
 }
 
 bool checkRegistration(){
 
   if(EEPROM.read(0)==1){
-    Serial.println("codice presente");
+    //Serial.println("codice presente");
     return true;
   }else{
-    Serial.println("codice non presente");
+    //Serial.println("codice non presente");
     return false;
   }
 }
@@ -165,17 +146,47 @@ String verificaCodice(String codiceMW){
   
   int httpcode=httpclient.GET();
   utente=httpclient.getString();
-  Serial.println("id= "+utente+" URL= "+"http://www.heritagexperience.com/marketwall/checkmw.php?id_mw="+codiceMW+" http code:"+String(httpcode)+" len: "+utente.length());
+  //Serial.println("id= "+utente+" URL= "+"http://www.heritagexperience.com/marketwall/checkmw.php?id_mw="+codiceMW+" http code:"+String(httpcode)+" len: "+utente.length());
   httpclient.end();
   
   }
   return utente;
 }
 
-String* foundnewmc(){
-String* valore=new String[2];
-valore[0]="1";
-valore[1]="acqua Lete";
-return valore;
-}
+void foundNewmc(){
+  String valore;
+  int httpcode=0;
+  while(httpcode!=HTTP_CODE_OK){
+    httpclient.begin("http://www.heritagexperience.com/marketwall/checkmc.php?mwid="+codiceMW);
+    httpcode=httpclient.GET();
+    valore=httpclient.getString().c_str();//MI RACCOMANDO LA CONVERSIONE IN CHAR ALTRIMENTI JSONBUFFER NON FUNZIONA...
+   //Serial.println(valore);
+    httpclient.end();
+    
+    }
+  char valori[]=strtok(valore,"},{");
+  for (int i =0; i<valori,length();i++){
+  JsonObject& root = jsonBuffer.parseObject(valori[i]);
+    for (JsonObject::iterator it=root.begin(); it!=root.end(); ++it) {
+    Serial.println("qui");
+    
+      if((String(it->key))=="posizione" && String(it->value.as<char*>())=="1"){ //ASSOCIA POSIZIONE E LED
+        int led=D7;
+      
+      digitalWrite(led,1);
+      }
+    display.clearDisplay();
+    display.setCursor(0,0);
+    display.println("posiziona il nuovo MC presso il led");
+    display.setCursor(0,20);
+    display.println(String(it->key));
+    display.setCursor(0,30);
+    display.println(String(it->value.as<char*>()));
+    display.display(); 
+    
+    delay(1000);
 
+  }
+
+}
+}
