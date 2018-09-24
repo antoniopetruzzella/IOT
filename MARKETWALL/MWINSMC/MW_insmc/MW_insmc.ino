@@ -65,8 +65,8 @@ void loop() {
   display.println("not connected");
   display.display();
 }
-    
- //delay(1000);
+ 
+ //delay(3600000);
 
 }
 
@@ -156,6 +156,7 @@ String verificaCodice(String codiceMW){
 void foundNewmc(){
   String valore;
   int httpcode=0;
+  String valori[36];
   while(httpcode!=HTTP_CODE_OK){
     httpclient.begin("http://www.heritagexperience.com/marketwall/checkmc.php?mwid="+codiceMW);
     httpcode=httpclient.GET();
@@ -164,29 +165,41 @@ void foundNewmc(){
     httpclient.end();
     
     }
-  char valori[]=strtok(valore,"},{");
-  for (int i =0; i<valori,length();i++){
-  JsonObject& root = jsonBuffer.parseObject(valori[i]);
-    for (JsonObject::iterator it=root.begin(); it!=root.end(); ++it) {
-    Serial.println("qui");
-    
-      if((String(it->key))=="posizione" && String(it->value.as<char*>())=="1"){ //ASSOCIA POSIZIONE E LED
-        int led=D7;
+  
+  int i=0;  
+  while(valore.length()>1){  
+  int cut=valore.indexOf("}")+1;  
+  valori[i]=valore.substring(valore.indexOf("{"),cut);
+  //Serial.println(valore);
+  Serial.println(String(i)+" "+valori[i]);
+  valore.remove(0,cut);
+  i++;
+  }
+  
+  for(int j=0;j<i;j++){
+    JsonObject& root = jsonBuffer.parseObject(valori[j]);
+    Serial.println("j:"+String(j));
+      for (JsonObject::iterator it=root.begin(); it!=root.end(); ++it) {
       
-      digitalWrite(led,1);
+      
+        if((String(it->key))=="posizione" && String(it->value.as<char*>())=="1"){ //ASSOCIA POSIZIONE E LED
+          int led=D7;
+        
+        digitalWrite(led,1);
+        }
+      display.clearDisplay();
+      display.setCursor(0,0);
+      display.println("posiziona il nuovo MC presso il led");
+      display.setCursor(0,20);
+      display.println(String(it->key));
+      display.setCursor(0,30);
+      display.println(String(it->value.as<char*>()));
+      display.display(); 
+      
+      delay(1000);
+ 
       }
-    display.clearDisplay();
-    display.setCursor(0,0);
-    display.println("posiziona il nuovo MC presso il led");
-    display.setCursor(0,20);
-    display.println(String(it->key));
-    display.setCursor(0,30);
-    display.println(String(it->value.as<char*>()));
-    display.display(); 
-    
-    delay(1000);
 
   }
 
-}
 }
