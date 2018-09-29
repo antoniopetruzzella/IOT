@@ -38,15 +38,15 @@ void setup()
       display.setCursor(10,30);
       display.println("codice da inserire: "+codiceMW);
       display.display();
-      utente=verificaCodice(codiceMW);
+      utente=getUser(codiceMW);
     }
     codiceMW=leggiCodice();
-    utente=verificaCodice(codiceMW);
+    utente=getUser(codiceMW);
     display.clearDisplay();
     display.setCursor(10,30);
     display.println("MW ID: "+codiceMW+" utente "+utente);
-    display.display();   
-   
+    display.display();
+
   }
 
 
@@ -57,7 +57,7 @@ void loop() {
   if (WiFi.status() == WL_CONNECTED) {
   digitalWrite(D7,0);
   foundNewmc();
-  
+
 }else{
 
   //display.clearDisplay();
@@ -65,13 +65,13 @@ void loop() {
   display.println("not connected");
   display.display();
 }
- 
+
  //delay(3600000);
 
 }
 
 bool getConnection(){
-    
+
     display.setTextSize(1);
     display.setTextColor(WHITE);
     display.setCursor(10,10);
@@ -83,12 +83,12 @@ bool getConnection(){
     wifiManager.setAPCallback(configModeCallback);
     wifiManager.autoConnect("AutoConnectAP");
     //Serial.println("connected...yeey :)");
-    //Serial.println(WiFi.localIP()); 
+    //Serial.println(WiFi.localIP());
   display.clearDisplay();
   display.setCursor(10,20);
   display.println("connected");
-  display.display();   
-    return true; 
+  display.display();
+    return true;
 }
 void configModeCallback (WiFiManager *myWiFiManager) {
  display.clearDisplay();
@@ -111,7 +111,7 @@ void scriviCodice(){
   for(int i=0;i<7;i++){
   EEPROM.write(i+1,codice[i]);
   //Serial.println(String(i)+" - "+ codice[i]);
-  
+
   }
 EEPROM.commit();
 }
@@ -123,7 +123,7 @@ String leggiCodice(){
   //Serial.println(String(ii)+" - "+buf[ii]);
   }
   String codice_finale=(String)buf;
-  //Serial.println("codice letto: "+codice_finale.substring(0,7));
+  Serial.println("codice letto: "+codice_finale.substring(0,7));
   return codice_finale.substring(0,7);
 }
 
@@ -138,17 +138,17 @@ bool checkRegistration(){
   }
 }
 
-String verificaCodice(String codiceMW){
-
+String getUser(String codiceMW){
+int httpcode;
   String utente="";
-  while(utente.length()<2){
-  httpclient.begin("http://www.heritagexperience.com/marketwall/checkmw.php?id_mw="+codiceMW);
-  
-  int httpcode=httpclient.GET();
+  while(utente.length()<2 || httpcode!=HTTP_CODE_OK){
+  httpclient.begin("http://www.heritagexperience.com/mw/index.php?option=com_marketwall&task=marketwalltask.getuser&mwid="+codiceMW);
+                           
+  httpcode=httpclient.GET();
+  Serial.println("httpcode: "+String(httpcode));
   utente=httpclient.getString();
-  //Serial.println("id= "+utente+" URL= "+"http://www.heritagexperience.com/marketwall/checkmw.php?id_mw="+codiceMW+" http code:"+String(httpcode)+" len: "+utente.length());
-  httpclient.end();
-  
+    httpclient.end();
+
   }
   return utente;
 }
@@ -158,33 +158,34 @@ void foundNewmc(){
   int httpcode=0;
   String valori[36];
   while(httpcode!=HTTP_CODE_OK){
-    httpclient.begin("http://www.heritagexperience.com/marketwall/checkmc.php?mwid="+codiceMW);
+    //Serial.println(codiceMW);
+    httpclient.begin("http://www.heritagexperience.com/mw/index.php?option=com_marketwall&task=marketwalltask.checkmc&mwid="+codiceMW);
     httpcode=httpclient.GET();
     valore=httpclient.getString().c_str();//MI RACCOMANDO LA CONVERSIONE IN CHAR ALTRIMENTI JSONBUFFER NON FUNZIONA...
    //Serial.println(valore);
     httpclient.end();
-    
+
     }
-  
-  int i=0;  
-  while(valore.length()>1){  
-  int cut=valore.indexOf("}")+1;  
+
+  int i=0;
+  while(valore.length()>1){
+  int cut=valore.indexOf("}")+1;
   valori[i]=valore.substring(valore.indexOf("{"),cut);
   //Serial.println(valore);
-  Serial.println(String(i)+" "+valori[i]);
+  //Serial.println(String(i)+" "+valori[i]);
   valore.remove(0,cut);
   i++;
   }
-  
+
   for(int j=0;j<i;j++){
     JsonObject& root = jsonBuffer.parseObject(valori[j]);
-    Serial.println("j:"+String(j));
+    //Serial.println("j:"+String(j));
       for (JsonObject::iterator it=root.begin(); it!=root.end(); ++it) {
-      
-      
+
+
         if((String(it->key))=="posizione" && String(it->value.as<char*>())=="1"){ //ASSOCIA POSIZIONE E LED
           int led=D7;
-        
+
         digitalWrite(led,1);
         }
       display.clearDisplay();
@@ -194,10 +195,10 @@ void foundNewmc(){
       display.println(String(it->key));
       display.setCursor(0,30);
       display.println(String(it->value.as<char*>()));
-      display.display(); 
-      
+      display.display();
+
       delay(1000);
- 
+
       }
 
   }

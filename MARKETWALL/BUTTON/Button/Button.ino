@@ -36,7 +36,7 @@ Serial.begin(9600);
   // initialize the pushbutton pin as an input:
   pinMode(buttonPin, INPUT);
   //digitalWrite(buttonPin, LOW);
-  //digitalWrite(ledPin, LOW);
+  digitalWrite(ledPin, HIGH);
 }
 
 void loop() {
@@ -44,21 +44,22 @@ void loop() {
   buttonState = digitalRead(buttonPin);
 
   // check if the pushbutton is pressed. If it is, the buttonState is HIGH:
-  if (buttonState == HIGH) {
-    // turn LED on:
-    digitalWrite(ledPin, HIGH);
-    Serial.println("pulsante rilasciato");
+  if (buttonState ==LOW) {
+    // turn LED on:SEMBRA SBAGLIATO MA E' COSI' EV. PULSANTE NATURALMENTE CHIUSO
+    digitalWrite(ledPin, LOW);
+    Serial.println("pulsante premuto");
     
   } else {
     // turn LED off:
-    digitalWrite(ledPin, LOW);
-    Serial.println("pulsante premuto");
-    bool result=verifica3sec();
+    digitalWrite(ledPin, HIGH);
+    
+    Serial.println("pulsante rilasciato");
+    /*bool result=verifica3sec();
     if(result==true){
       Serial.println ("faccio partire l'ordine");
     }else{
       Serial.println("ordine non partito");
-    }
+    }*/
   }
   delay(1000);
 }
