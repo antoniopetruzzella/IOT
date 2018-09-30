@@ -25,6 +25,7 @@ class marketwallControllerMarketwalltask extends JControllerLegacy
     private $_filterparam;
     private $mwid;
     private $posizione;
+    private $userid;
 
     public function __construct($config = array())
     {
@@ -33,6 +34,7 @@ class marketwallControllerMarketwalltask extends JControllerLegacy
         $this->_filterparam = new stdClass();
         $this->mwid = JRequest::getVar('mwid');
         $this->posizione = JRequest::getVar('posizione');
+        $this->userid = JRequest::getVar('userid');
 
 
     }
@@ -41,6 +43,13 @@ class marketwallControllerMarketwalltask extends JControllerLegacy
     public function getuser(){
       $model=new marketwallModelmarketwalltask();
       $user=$model->getuser($this->mwid);
+      echo ($user);
+      $this->_app->close();
+    }
+
+    public function getusername(){
+      $model=new marketwallModelmarketwalltask();
+      $user=$model->getusername($this->userid);
       echo ($user);
       $this->_app->close();
     }

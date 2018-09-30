@@ -18,6 +18,7 @@
 Adafruit_SSD1306 display(-1);
 String codiceMW;
 String utente;
+String username;
 HTTPClient httpclient;
 int ledpin;
 int set_led_status;
@@ -40,6 +41,7 @@ void setup()
   
   //PRIMO METODO SETUP: CONNETTERSI
   if(getConnection()){
+    
     //SECONDO METODO DI SETUP:VERIFICA CHE VI SIA UN CODICE NELLA EEPROM
     if(!checkRegistration()){
       scriviCodice();//ALTRIMENTI  LO GENERA
@@ -47,16 +49,17 @@ void setup()
       display.setCursor(10,30);
       display.println("codice da inserire: "+codiceMW);
       display.display();
-      utente=getUser(codiceMW);
+      
     } //LO LEGGE
     codiceMW=leggiCodice();
     //TERZO METODO DI SETUP. TROvA L'UTENTE DEL MARKETWALL
     utente=getUser(codiceMW);
+    username=getUserName(utente);
     display.clearDisplay();
     display.setCursor(10,30);
     display.println("MW ID: "+codiceMW);
     display.setCursor(10,40);
-    display.println(" utente "+utente);
+    display.println(" utente "+username);
     display.display();
 
   }
@@ -74,7 +77,7 @@ void loop() {
     display.setCursor(10,30);
     display.println("MW ID: "+codiceMW);
     display.setCursor(10,40);
-    display.println(" utente "+utente);
+    display.println(" utente "+username);
     display.display();
    buttonClickedEventHandler(); 
 }else{
@@ -222,6 +225,22 @@ int httpcode;
 
   }
   return utente;
+}
+
+String getUserName(String utente){
+int httpcode;
+  String username="";
+  Serial.println("ID: "+utente);
+  while(httpcode!=HTTP_CODE_OK){
+  httpclient.begin("http://www.heritagexperience.com/mw/index.php?option=com_marketwall&task=marketwalltask.getusername&userid="+utente);
+                           
+  httpcode=httpclient.GET();
+  
+  username=httpclient.getString();
+    httpclient.end();
+
+  }
+  return username;
 }
 
 void foundNewmc(){

@@ -57,6 +57,19 @@ class marketwallModelmarketwalltask extends JModelLegacy {
 
     }
 
+    public function getusername($userid){
+
+      $query=$this->_db->getQuery(true);
+      $query->select('username');
+      $query->from('ux6dr_users');
+      $query->where('id='.$userid);
+
+      $this->_db->setQuery($query);
+      return $this->_db->loadResult();
+
+
+    }
+
     public function checkmc($mwid){
 
       $query=$this->_db->getQuery(true);
