@@ -25,22 +25,28 @@ DynamicJsonBuffer jsonBuffer;
 
 void setup()
 {
+  //DICHIARAZIONI
    EEPROM.begin(10);
   //EEPROM.write(0,0);//RESET FORZATO!!
   Serial.begin(9600);
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C, false);
   ledpin=D7;
-   pinMode(ledpin, OUTPUT);
+  pinMode(ledpin, OUTPUT);
+  //FINE DICHIARAZIONI
+
+  //PRIMO METODO SETUP: CONNETTERSI
   if(getConnection()){
-    if(!checkRegistration()){//VERIFICA CHE VI SIA UN CODICE NELLA EEPROM, ALTRIMENTI
-      scriviCodice();// LO GENERA
+    //SECONDO METODO DI SETUP:VERIFICA CHE VI SIA UN CODICE NELLA EEPROM
+    if(!checkRegistration()){
+      scriviCodice();//ALTRIMENTI  LO GENERA
       codiceMW=leggiCodice();//LO LEGGE
       display.setCursor(10,30);
       display.println("codice da inserire: "+codiceMW);
       display.display();
       utente=getUser(codiceMW);
-    }
+    } //LO LEGGE
     codiceMW=leggiCodice();
+    //TERZO METODO DI SETUP. TROAV L'UTENTE DEL MARKETWALL
     utente=getUser(codiceMW);
     display.clearDisplay();
     display.setCursor(10,30);
@@ -66,7 +72,7 @@ void loop() {
   display.display();
 }
 
- //delay(3600000);
+ delay(1000);
 
 }
 
@@ -145,7 +151,7 @@ int httpcode;
   httpclient.begin("http://www.heritagexperience.com/mw/index.php?option=com_marketwall&task=marketwalltask.getuser&mwid="+codiceMW);
                            
   httpcode=httpclient.GET();
-  Serial.println("httpcode: "+String(httpcode));
+  //Serial.println("httpcode: "+String(httpcode));
   utente=httpclient.getString();
     httpclient.end();
 
@@ -159,23 +165,30 @@ void foundNewmc(){
   String valori[36];
   while(httpcode!=HTTP_CODE_OK){
     //Serial.println(codiceMW);
-    httpclient.begin("http://www.heritagexperience.com/mw/index.php?option=com_marketwall&task=marketwalltask.checkmc&mwid="+codiceMW);
+    int bgn=httpclient.begin("http://www.heritagexperience.com/mw/index.php?option=com_marketwall&task=marketwalltask.checkmc&mwid="+codiceMW);
+    Serial.println("getbgn: "+String(bgn));
     httpcode=httpclient.GET();
+   
+    Serial.println("httpcode: "+String(httpcode));
+    //Serial.println("getString: "+httpclient.getString());
     valore=httpclient.getString().c_str();//MI RACCOMANDO LA CONVERSIONE IN CHAR ALTRIMENTI JSONBUFFER NON FUNZIONA...
-   //Serial.println(valore);
+    
+   
     httpclient.end();
 
     }
 
   int i=0;
-  while(valore.length()>1){
-  int cut=valore.indexOf("}")+1;
-  valori[i]=valore.substring(valore.indexOf("{"),cut);
-  //Serial.println(valore);
-  //Serial.println(String(i)+" "+valori[i]);
-  valore.remove(0,cut);
-  i++;
-  }
+  
+    while(valore.length()>2){
+    int cut=valore.indexOf("}")+1;
+    valori[i]=valore.substring(valore.indexOf("{"),cut);
+    //Serial.println(valore);
+    //Serial.println(String(i)+" "+valori[i]);
+    valore.remove(0,cut);
+    i++;
+    }
+  
 
   for(int j=0;j<i;j++){
     JsonObject& root = jsonBuffer.parseObject(valori[j]);
