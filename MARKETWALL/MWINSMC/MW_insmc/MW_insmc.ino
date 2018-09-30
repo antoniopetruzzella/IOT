@@ -21,6 +21,7 @@ String utente;
 HTTPClient httpclient;
 int ledpin;
 int set_led_status;
+int buttonPin;
 DynamicJsonBuffer jsonBuffer;
 
 void setup()
@@ -31,9 +32,12 @@ void setup()
   Serial.begin(9600);
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C, false);
   ledpin=D7;
+  buttonPin = D8;
   pinMode(ledpin, OUTPUT);
+  digitalWrite(buttonPin,LOW);
+  pinMode(buttonPin, INPUT);
   //FINE DICHIARAZIONI
-
+  
   //PRIMO METODO SETUP: CONNETTERSI
   if(getConnection()){
     //SECONDO METODO DI SETUP:VERIFICA CHE VI SIA UN CODICE NELLA EEPROM
@@ -46,11 +50,13 @@ void setup()
       utente=getUser(codiceMW);
     } //LO LEGGE
     codiceMW=leggiCodice();
-    //TERZO METODO DI SETUP. TROAV L'UTENTE DEL MARKETWALL
+    //TERZO METODO DI SETUP. TROvA L'UTENTE DEL MARKETWALL
     utente=getUser(codiceMW);
     display.clearDisplay();
     display.setCursor(10,30);
-    display.println("MW ID: "+codiceMW+" utente "+utente);
+    display.println("MW ID: "+codiceMW);
+    display.setCursor(10,40);
+    display.println(" utente "+utente);
     display.display();
 
   }
@@ -59,11 +65,18 @@ void setup()
 }
 
 void loop() {
-  display.clearDisplay();
+  Serial.println("passo");
+
   if (WiFi.status() == WL_CONNECTED) {
   digitalWrite(D7,0);
   foundNewmc();
-
+    display.clearDisplay();
+    display.setCursor(10,30);
+    display.println("MW ID: "+codiceMW);
+    display.setCursor(10,40);
+    display.println(" utente "+utente);
+    display.display();
+   buttonClickedEventHandler(); 
 }else{
 
   //display.clearDisplay();
@@ -74,6 +87,34 @@ void loop() {
 
  delay(1000);
 
+}
+
+void buttonClickedEventHandler(){
+
+  
+
+int buttonState = digitalRead(buttonPin);
+Serial.println(String(buttonState));
+  // check if the pushbutton is pressed. If it is, the buttonState is HIGH:
+  if (buttonState ==LOW) {
+    
+    //digitalWrite(ledPin, LOW);
+    Serial.println("pulsante non premuto");
+    
+  }  
+  if (buttonState ==HIGH) {
+    // turn LED off:
+    //digitalWrite(ledPin, HIGH);
+    
+    Serial.println("pulsante premuto");
+    /*bool result=verifica3sec();
+    if(result==true){
+      Serial.println ("faccio partire l'ordine");
+    }else{
+      Serial.println("ordine non partito");
+    }*/
+  }
+  
 }
 
 bool getConnection(){
@@ -163,13 +204,15 @@ void foundNewmc(){
   String valore;
   int httpcode=0;
   String valori[36];
+//VIENE COSTRUITO L'ARRAY DEI NUOVI MC
+  
   while(httpcode!=HTTP_CODE_OK){
     //Serial.println(codiceMW);
     int bgn=httpclient.begin("http://www.heritagexperience.com/mw/index.php?option=com_marketwall&task=marketwalltask.checkmc&mwid="+codiceMW);
-    Serial.println("getbgn: "+String(bgn));
+    //Serial.println("getbgn: "+String(bgn));
     httpcode=httpclient.GET();
    
-    Serial.println("httpcode: "+String(httpcode));
+    //Serial.println("httpcode: "+String(httpcode));
     //Serial.println("getString: "+httpclient.getString());
     valore=httpclient.getString().c_str();//MI RACCOMANDO LA CONVERSIONE IN CHAR ALTRIMENTI JSONBUFFER NON FUNZIONA...
     
@@ -189,7 +232,7 @@ void foundNewmc(){
     i++;
     }
   
-
+//PER CIASCUN NUOVO MC VIENE ASSOCIATO UN LED E UNA SCRITTA
   for(int j=0;j<i;j++){
     JsonObject& root = jsonBuffer.parseObject(valori[j]);
     //Serial.println("j:"+String(j));
@@ -210,10 +253,11 @@ void foundNewmc(){
       display.println(String(it->value.as<char*>()));
       display.display();
 
-      delay(1000);
+      delay(500);
 
       }
 
   }
-
+//display.clearDisplay();
+//display.display();
 }
