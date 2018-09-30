@@ -32,7 +32,7 @@ void setup()
   Serial.begin(9600);
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C, false);
   ledpin=D7;
-  buttonPin = D8;
+  buttonPin = D6;
   pinMode(ledpin, OUTPUT);
   digitalWrite(buttonPin,LOW);
   pinMode(buttonPin, INPUT);
@@ -100,23 +100,47 @@ Serial.println(String(buttonState));
     
     //digitalWrite(ledPin, LOW);
     Serial.println("pulsante non premuto");
+   
+    
     
   }  
   if (buttonState ==HIGH) {
-    // turn LED off:
-    //digitalWrite(ledPin, HIGH);
-    
+   
     Serial.println("pulsante premuto");
-    /*bool result=verifica3sec();
+    insertPositionConfirm(1);
+    bool result=verifica3sec(buttonPin);
     if(result==true){
       Serial.println ("faccio partire l'ordine");
     }else{
       Serial.println("ordine non partito");
-    }*/
+    }
   }
   
 }
+bool verifica3sec(int pinButton){
 
+  int i=0;
+  while(i<3){
+
+    if(digitalRead(pinButton)==HIGH){
+      return false;
+    }
+    i++;
+    delay(1000);
+  }
+  return true;
+}
+
+void insertPositionConfirm(int posizione){
+   int httpcode=0;
+   while(httpcode!=HTTP_CODE_OK){
+   httpclient.begin("http://www.heritagexperience.com/mw/index.php?option=com_marketwall&task=marketwalltask.confirmmcinsertion&mwid="+codiceMW+"&posizione="+posizione);
+   httpcode=httpclient.GET();
+   httpclient.end();
+   }
+  
+  }
+  
 bool getConnection(){
 
     display.setTextSize(1);

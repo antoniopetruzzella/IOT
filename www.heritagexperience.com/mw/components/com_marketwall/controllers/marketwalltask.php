@@ -24,6 +24,7 @@ class marketwallControllerMarketwalltask extends JControllerLegacy
     private $params;
     private $_filterparam;
     private $mwid;
+    private $posizione;
 
     public function __construct($config = array())
     {
@@ -31,7 +32,7 @@ class marketwallControllerMarketwalltask extends JControllerLegacy
         $this->_app = JFactory::getApplication();
         $this->_filterparam = new stdClass();
         $this->mwid = JRequest::getVar('mwid');
-
+        $this->posizione = JRequest::getVar('posizione');
 
 
     }
@@ -51,6 +52,15 @@ class marketwallControllerMarketwalltask extends JControllerLegacy
       echo json_encode($result);
       $this->_app->close();
 
+    }
+
+    public function confirmmcinsertion(){
+
+      $model=new marketwallModelmarketwalltask();
+
+      $result=$model->confirmmcinsertion($this->mwid,$this->posizione);
+      echo json_encode($result=='true'?1:0);
+      $this->_app->close();
     }
 
 
