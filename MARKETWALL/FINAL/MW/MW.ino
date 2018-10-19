@@ -99,7 +99,7 @@ void buttonClickedEventHandler(){
   buttonState = digitalRead(buttonPin);
 //Serial.println(String(buttonState));
   // check if the pushbutton is pressed. If it is, the buttonState is HIGH:
-  if (buttonState ==LOW) {
+  if (buttonState ==HIGH) {
     
     //digitalWrite(ledPin, LOW);
     //Serial.println("pulsante non premuto");
@@ -131,7 +131,7 @@ bool verifica1sec(int pinButton){
       return false;
     }
     i++;
-    delay(1000);
+    delay(100);
   }
   return true;
 }
@@ -142,6 +142,7 @@ bool verifica3sec(int pinButton){
  display.display();
   int i=0;
   while(i<3){
+     Serial.println ("dentro ver 3");
     buttonState = digitalRead(buttonPin);
     if(buttonState==LOW){
       return false;
@@ -159,7 +160,11 @@ void insertPositionConfirm(int posizione){
    httpcode=httpclient.GET();
    httpclient.end();
    }
-  
+    display.clearDisplay();
+    display.setCursor(10,20);
+    display.println("NUOVO MCUBE INSERITO, PUOI RILASCIARE");
+    display.display();
+    delay(1000);
 }
 
 bool insertNewOrdine(int posizione){
