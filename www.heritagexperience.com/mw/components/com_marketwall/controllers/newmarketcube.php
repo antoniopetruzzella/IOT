@@ -39,7 +39,7 @@ class marketwallControllerNewmarketcube extends JControllerLegacy
 
         $model=new marketwallModelnewmarketcube();
         if($model->InsertNewMarketCube($this->_filterparam->id_prodotto)) {
-            echo "insertimento riuscito";
+            echo "inserimento riuscito";
         }
 
 

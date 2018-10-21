@@ -67,7 +67,7 @@ class marketwallControllerMarketwalltask extends JControllerLegacy
 
       $model=new marketwallModelmarketwalltask();
 
-      $result=$model->confirmmcinsertion($this->mwid,$this->posizione);
+      $result=$model->confirmmcinsertion($this->mwid);
       echo json_encode($result=='true'?1:0);
       $this->_app->close();
     }

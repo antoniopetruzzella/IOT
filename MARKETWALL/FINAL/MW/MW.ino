@@ -24,6 +24,9 @@ int ledpin;
 int set_led_status;
 int buttonPin;
 int buttonState;
+int blubuttonState;
+int bluledpin;
+int blubuttonPin;
 DynamicJsonBuffer jsonBuffer;
 
 void setup()
@@ -34,10 +37,13 @@ void setup()
   Serial.begin(9600);
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C, false);
   ledpin=D7;
+  bluledpin=D5;
   buttonPin = D6;
+  blubuttonPin=D8;
   pinMode(ledpin, OUTPUT);
-  
+  pinMode(bluledpin,OUTPUT);
   pinMode(buttonPin, INPUT);
+  pinMode(blubuttonPin, INPUT);
   
   //FINE DICHIARAZIONI
   
@@ -73,7 +79,8 @@ void loop() {
   //Serial.println("passo");
 
   if (WiFi.status() == WL_CONNECTED) {
-  digitalWrite(D7,0);
+  digitalWrite(bluledpin,0);
+  digitalWrite(ledpin,0);
   foundNewmc();
     display.clearDisplay();
     display.setCursor(10,30);
@@ -97,24 +104,24 @@ void loop() {
 void buttonClickedEventHandler(){
 
   buttonState = digitalRead(buttonPin);
-//Serial.println(String(buttonState));
+  blubuttonState= digitalRead(blubuttonPin);
+Serial.println(String(blubuttonState));
   // check if the pushbutton is pressed. If it is, the buttonState is HIGH:
-  if (buttonState ==HIGH) {
+
+  if (blubuttonState==HIGH){
+
     
-    //digitalWrite(ledPin, LOW);
-    //Serial.println("pulsante non premuto");
-   
-    
-    
-  }  
-  if (buttonState==HIGH) {
-   
-    bool ver1s=verifica1sec(buttonPin);
+    bool ver1s=verifica1sec();
     if(ver1s==true){
       Serial.println ("posizione inserita");
-      insertPositionConfirm(1);
+      insertPositionConfirm();
     }
-    bool ver3s=verifica3sec(buttonPin);
+    
+}
+     
+  if (buttonState==HIGH) {
+   
+    bool ver3s=verifica3sec();
     if(ver3s==true){
       Serial.println ("faccio partire l'ordine");
       insertNewOrdine(1);
@@ -122,12 +129,12 @@ void buttonClickedEventHandler(){
   }
   
 }
-bool verifica1sec(int pinButton){
+bool verifica1sec(){
 
   int i=0;
   while(i<1){
-    buttonState = digitalRead(buttonPin);
-    if(buttonState==LOW){
+    blubuttonState = digitalRead(blubuttonPin);
+    if(blubuttonState==LOW){
       return false;
     }
     i++;
@@ -135,7 +142,7 @@ bool verifica1sec(int pinButton){
   }
   return true;
 }
-bool verifica3sec(int pinButton){
+bool verifica3sec(){
  display.clearDisplay();
  display.setCursor(10,10);
  display.println("TIENI PREMUTO PER INVIARE L'ORDINE");
@@ -153,10 +160,11 @@ bool verifica3sec(int pinButton){
   return true;
 }
 
-void insertPositionConfirm(int posizione){
+void insertPositionConfirm(){
+   Serial.println("dentro insertconfirm");
    int httpcode=0;
    while(httpcode!=HTTP_CODE_OK){
-   httpclient.begin("http://www.heritagexperience.com/mw/index.php?option=com_marketwall&task=marketwalltask.confirmmcinsertion&mwid="+codiceMW+"&posizione="+posizione);
+   httpclient.begin("http://www.heritagexperience.com/mw/index.php?option=com_marketwall&task=marketwalltask.confirmmcinsertion&mwid="+codiceMW);
    httpcode=httpclient.GET();
    httpclient.end();
    }
@@ -327,13 +335,7 @@ void foundNewmc(){
     JsonObject& root = jsonBuffer.parseObject(valori[j]);
     //Serial.println("j:"+String(j));
       for (JsonObject::iterator it=root.begin(); it!=root.end(); ++it) {
-
-
-        if((String(it->key))=="posizione" && String(it->value.as<char*>())=="1"){ //ASSOCIA POSIZIONE E LED
-          int led=D7;
-
-        digitalWrite(led,1);
-        }
+      digitalWrite(ledpin,1);  
       display.clearDisplay();
       display.setCursor(0,0);
       display.println("posiziona il nuovo MC presso il led");
@@ -342,7 +344,6 @@ void foundNewmc(){
       display.setCursor(0,30);
       display.println(String(it->value.as<char*>()));
       display.display();
-
       delay(500);
 
       }

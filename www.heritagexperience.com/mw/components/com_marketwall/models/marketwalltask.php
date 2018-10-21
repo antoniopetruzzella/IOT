@@ -88,7 +88,7 @@ class marketwallModelmarketwalltask extends JModelLegacy {
 
     public function confirmmcinsertion($mwid,$posizione){
 
-      $query="UPDATE mc_marketcube SET inserito=1 WHERE id_mw=".$mwid." AND posizione=".$posizione;
+      $query="UPDATE mc_marketcube SET inserito=1 WHERE id_mw=".$mwid;
       $this->_db->setQuery($query);
       $result=$this->_db->execute();
       return $result;
