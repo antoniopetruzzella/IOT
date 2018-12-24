@@ -14,6 +14,10 @@ void setup()   {
   OLED.setTextColor(WHITE);
   OLED.setCursor(0,0);
   OLED.println("automatedhome.party");
+  OLED.println("");
+
+
+
  
   OLED.display(); //output 'display buffer' to screen  
   OLED.startscrollleft(0x00, 0x0F); //make display scroll 

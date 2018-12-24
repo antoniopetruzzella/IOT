@@ -8,6 +8,7 @@
 #define NUMPIXELS 60
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
+WiFiManager wifiManager;
 struct Pjmask{
 
   String nome;
@@ -17,7 +18,7 @@ struct Pjmask{
   };
 HTTPClient httpclient;  
 bool applicationState=1;
-int brightness=125;
+int brightness=65;
 Pjmask pjmasks[4];
 int Showid,Brightness,Speed;
 String Pjmaskname,Frompjmask,Topjmask;
@@ -26,7 +27,7 @@ DynamicJsonBuffer jsonBuffer;
 
 void setup()  {
   Serial.begin(9600);
-  WiFiManager wifiManager;
+  wifiManager.setConfigPortalTimeout(10);
   wifiManager.autoConnect("AutoConnectAP");
   Serial.println("connected...yeey :)");
   Serial.println(WiFi.localIP()); 
@@ -42,15 +43,18 @@ void setup()  {
   Speed=1000;
   pixels.begin();
   pixels.show();
-  pixels.setBrightness(brightness);
+  pixels.setBrightness(20);
   Serial.println("fine setup");
 }
 
 
 void loop() {
-  /* if (WiFi.status() != WL_CONNECTED){
-    staticPjmask("connection_error",255);
-   }*/
+   while (WiFi.status() != WL_CONNECTED){
+    Serial.println("mancanza d connessione");
+    staticPjmask("connection_error",100);
+   
+   
+   }
   if(applicationState==1){
 
     //fadingPjs(pjmaskname,"gufetta",_speed,200);
@@ -65,7 +69,7 @@ void loop() {
   }else{
     stopAllShows();
   }
-  delay(Speed);
+  delay(500);
 }
 
 void playCurrentShow(){
@@ -81,9 +85,7 @@ void playCurrentShow(){
   httpclient.begin("http://www.heritagexperience.com/pjmask/controller.php?action=getcurrentshow");
                        
   httpcode=httpclient.GET();
-  //Serial.println("httpcode: "+String(httpcode));
-  //getCurrentShow_=getJsonObjectToParse(httpclient.getString());
- JsonObject& root = jsonBuffer.parseObject(httpclient.getString().c_str());
+  JsonObject& root = jsonBuffer.parseObject(httpclient.getString().c_str());
  
   const char* _showid=root["showid"];
   const char* _pjmaskname=root["pjmaskname"];
@@ -112,35 +114,40 @@ void playCurrentShow(){
   
   
   
-  Serial.println("showid "+showid);
+  Serial.println("showid "+String(showid));
   httpclient.end();
-
+  /*delete _showid;
+  delete _pjmaskname;
+  delete _brightness;
+  delete _speed;
+  delete _frompjmask;
+  delete _topjmask;*/
   }
   
   switch(showid){
 
     case 1:
-  
       staticPjmask(pjmaskname,brightness);
       break;
+
+    case 2:
+      pathPjmask(pjmaskname,_speed_,false);
+       break;
     
+    case 3:
+      fillingPjmask(pjmaskname,_speed_,false);  
+       break;
+    
+    case 4:
+      deflatingPjmask(pjmaskname,_speed_,false);
+      break;  
+
+    case 8:
+      fadingPjs(frompjmask, topjmask, _speed_, 1000);
+      break;   
     }
-  
-}
 
-String getStaticPjmaskname(){
 
-  int httpcode;
-  String pjmaskname;
-  while(httpcode!=HTTP_CODE_OK){
-  httpclient.begin("http://www.heritagexperience.com/pjmask/controller.php?action=getstaticpjmask");
-  httpcode=httpclient.GET();
-  pjmaskname=httpclient.getString();
-  httpclient.end();
-  
-  }
-   
-  return pjmaskname;
 }
 
 void stopAllShows(){
