@@ -27,7 +27,7 @@ DynamicJsonBuffer jsonBuffer;
 
 void setup()  {
   Serial.begin(9600);
-  wifiManager.setConfigPortalTimeout(10);
+  wifiManager.setConfigPortalTimeout(10);//QUESTA RIGA EVITA CHE I TENTATIVI DI RICONENSSIONE VENGANO BLOCCATI DALLA RI-CONFIGURAZIONE TRAMITE PORTALE. 10 E' EVIDENTEMENTE UN VALORE DA DEBUG
   wifiManager.autoConnect("AutoConnectAP");
   Serial.println("connected...yeey :)");
   Serial.println(WiFi.localIP()); 
@@ -143,7 +143,8 @@ void playCurrentShow(){
       break;  
 
     case 8:
-      fadingPjs(frompjmask, topjmask, _speed_, 1000);
+      //fadingPjs(frompjmask, topjmask, _speed_, 1000);
+      fantasy();
       break;   
     }
 
@@ -255,10 +256,7 @@ Pjmask findPjmaskFromName(String _nome){
   }
 }
 
-void fantasy(){
-  int r1=125;int g1=178; int b1=253; int r2=12; int g2=78; int b2=99;
-  fade(r1,g1,b1,r2,g2,b2,5,50);
-}
+
 
 void fade(int r1, int g1, int b1, int r2, int g2, int b2, int fadeRate, int steps) {
   uint8_t red;
@@ -277,4 +275,35 @@ void fade(int r1, int g1, int b1, int r2, int g2, int b2, int fadeRate, int step
     delay(fadeRate);
   }
   delay(5000);
+}
+
+void fantasy(){
+  int red,green,blue;
+  for (int x = 0; x < NUMPIXELS; x++) {
+    int randompjmask=random(1,4);
+    switch(randompjmask){
+      case 1:
+        red=255;
+        green=0;
+        blue=0;
+        break;
+     case 2:
+        red=0;
+        green=255;
+        blue=0;
+        break;
+     case 3:
+        red=0;
+        green=0;
+        blue=255;
+        break;      
+    }
+    //int randompixel=random(0,255)
+      pixels.setPixelColor(x, red, green, blue);
+      delay(100);
+      pixels.show();
+    }
+    
+    delay(100);
+    stopAllShows();
 }
