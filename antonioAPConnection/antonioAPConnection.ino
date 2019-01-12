@@ -1,5 +1,3 @@
-#include <DHT_U.h>
-#include <DHT.h>
 
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 //needed for library
@@ -27,8 +25,8 @@ void setup() {
     //if it does not connect it starts an access point with the specified name
     //here  "AutoConnectAP"
     //and goes into a blocking loop awaiting configuration
-        wifiManager.autoConnect("AutoConnectAP");
-        //WiFi.begin("WebPocket-E036","antonio71");
+        //wifiManager.autoConnect("AutoConnectAP");
+        WiFi.begin("WebPocket-E036","antonio71");
     //or use this for auto generated name ESP + ChipID
     //wifiManager.autoConnect();
 

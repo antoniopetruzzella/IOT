@@ -81,25 +81,31 @@ void playCurrentShow(){
   int _speed_;
   String frompjmask;
   String topjmask;
+  Serial.println("call");
   while(httpcode!=HTTP_CODE_OK){
   httpclient.begin("http://www.heritagexperience.com/pjmask/controller.php?action=getcurrentshow");
-                       
+  Serial.println("waiting get");                     
   httpcode=httpclient.GET();
-  JsonObject& root = jsonBuffer.parseObject(httpclient.getString().c_str());
- 
-  const char* _showid=root["showid"];
-  const char* _pjmaskname=root["pjmaskname"];
-  const char* _brightness=root["brightness"];
-  const char* _speed=root["speed"];
-  const char* _frompjmask=root["frompjmask"];
-  const char* _topjmask=root["topjmask"];
   
-  showid=(String(_showid)).toInt();
-  pjmaskname=String(_pjmaskname);
-  brightness=(String(_brightness)).toInt();
-  _speed_=(String(_speed)).toInt();
-  frompjmask=String(_frompjmask);
-  topjmask=String(_topjmask);
+  JsonObject& root = jsonBuffer.parseObject(httpclient.getString().c_str());
+  
+  Serial.println("root returned");
+    if(root.size()>0){
+    const char* _showid=root["showid"];
+    const char* _pjmaskname=root["pjmaskname"];
+    const char* _brightness=root["brightness"];
+    const char* _speed=root["speed"];
+    const char* _frompjmask=root["frompjmask"];
+    const char* _topjmask=root["topjmask"];
+    showid=(String(_showid)).toInt();
+    pjmaskname=String(_pjmaskname);
+    brightness=(String(_brightness)).toInt();
+    _speed_=(String(_speed)).toInt();
+    frompjmask=String(_frompjmask);
+    topjmask=String(_topjmask);
+    }
+  }
+  
    
   if(showid!=Showid || pjmaskname!=Pjmaskname || brightness!=Brightness || _speed_!=Speed || frompjmask!=Frompjmask || topjmask!= Topjmask){
 
@@ -110,7 +116,7 @@ void playCurrentShow(){
     Brightness=brightness;
     Speed=_speed_;
     stopAllShows();
-  }
+  
   
   
   
