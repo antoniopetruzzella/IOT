@@ -195,7 +195,7 @@ bool getConnection(){
     //Serial.println("stop displaying");
     WiFiManager wifiManager;
     wifiManager.setAPCallback(configModeCallback);
-    wifiManager.autoConnect("AutoConnectAP");
+    wifiManager.autoConnect("CONNETTI MARKETWALL");
     //Serial.println("connected...yeey :)");
     //Serial.println(WiFi.localIP());
   display.clearDisplay();
@@ -207,7 +207,11 @@ bool getConnection(){
 void configModeCallback (WiFiManager *myWiFiManager) {
  display.clearDisplay();
   display.setCursor(10,20);
-  display.println("entra nella APP per la configurazione");
+  display.println("cerca tra le tue ");
+  display.setCursor(10,30);
+  display.println("WIFI:");
+  display.setCursor(10,40);
+  display.println("CONNETTI MARKETWALL");
   display.display();
 
 }
@@ -282,7 +286,20 @@ int httpcode;
   }
   return username;
 }
-
+void resetting(){
+ 
+  display.clearDisplay();
+  EEPROM.write(0,0);
+ WiFi.disconnect();
+   display.setCursor(0,0);
+  display.println("RESET DONE");
+  display.display();
+  int i=0;
+  while(i<1){
+    
+  }
+  
+}
 void foundNewmc(){
   String valore;
   int httpcode=0;
@@ -320,6 +337,9 @@ void foundNewmc(){
     JsonObject& root = jsonBuffer.parseObject(valori[j]);
     //Serial.println("j:"+String(j));
       for (JsonObject::iterator it=root.begin(); it!=root.end(); ++it) {
+      if(String(it->value.as<char*>()).substring(0,5)=="reset"){
+        resetting();  
+      }
       digitalWrite(ledpin,1);  
       display.clearDisplay();
       display.setCursor(0,0);
