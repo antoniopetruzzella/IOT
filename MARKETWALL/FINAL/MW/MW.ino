@@ -129,8 +129,10 @@ bool verifica1sec(){
 }
 bool verifica3sec(){
  display.clearDisplay();
- display.setCursor(10,10);
- display.println("TIENI PREMUTO PER INVIARE L'ORDINE");
+ display.setCursor(0,10);
+ display.println("TIENI PREMUTO");
+  display.setCursor(0,20);
+ display.println("PER INVIARE L'ORDINE");
  display.display();
   int i=0;
   while(i<3){
@@ -154,15 +156,17 @@ void insertPositionConfirm(){
    httpclient.end();
    }
     display.clearDisplay();
-    display.setCursor(10,20);
-    display.println("NUOVO MCUBE INSERITO, PUOI RILASCIARE");
+    display.setCursor(0,10);
+    display.println("NUOVO MCUBE INSERITO");
+    display.setCursor(0,20);
+    display.println("PUOI RILASCIARE");
     display.display();
     delay(5000);
 }
 
 bool insertNewOrdine(int posizione){
     display.clearDisplay();
-    display.setCursor(10,20);
+    display.setCursor(0,10);
     display.println("ORDINE IN INVIO");
     display.display();
    int httpcode=0;
@@ -175,8 +179,10 @@ bool insertNewOrdine(int posizione){
    }
    Serial.println("inserimento: "+result);
    if (result=="1"){
-    display.setCursor(10,30);
-    display.println("ORDINE INVIATO, PUOI RILASCIARE");
+    display.setCursor(0,20);
+    display.println("ORDINE INVIATO");
+     display.setCursor(0,30);
+    display.println("PUOI RILASCIARE");
     display.display();
     delay(1000);
     return true; 
