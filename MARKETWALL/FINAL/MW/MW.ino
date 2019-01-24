@@ -39,7 +39,7 @@ void setup()
   ledpin=D7;
   bluledpin=D5;
   buttonPin = D6;
-  blubuttonPin=D8;
+  blubuttonPin=D0;
   pinMode(ledpin, OUTPUT);
   pinMode(bluledpin,OUTPUT);
   pinMode(buttonPin, INPUT);
@@ -78,17 +78,17 @@ void setup()
 void loop() {
   //Serial.println("passo");
 
-  if (WiFi.status() == WL_CONNECTED) {
+if (WiFi.status() == WL_CONNECTED) {
   digitalWrite(bluledpin,0);
   digitalWrite(ledpin,0);
   foundNewmc();
-    display.clearDisplay();
-    display.setCursor(10,30);
-    display.println("MW ID: "+codiceMW);
-    display.setCursor(10,40);
-    display.println(" utente "+username);
-    display.display();
-   buttonClickedEventHandler(); 
+  display.clearDisplay();
+  display.setCursor(10,30);
+  display.println("MW ID: "+codiceMW);
+  display.setCursor(10,40);
+  display.println(" utente "+username);
+  display.display();
+  buttonClickedEventHandler(); 
 }else{
 
   //display.clearDisplay();
@@ -104,21 +104,6 @@ void loop() {
 void buttonClickedEventHandler(){
 
   buttonState = digitalRead(buttonPin);
-  blubuttonState= digitalRead(blubuttonPin);
-Serial.println(String(blubuttonState));
-  // check if the pushbutton is pressed. If it is, the buttonState is HIGH:
-
-  if (blubuttonState==HIGH){
-
-    
-    bool ver1s=verifica1sec();
-    if(ver1s==true){
-      Serial.println ("posizione inserita");
-      insertPositionConfirm();
-    }
-    
-}
-     
   if (buttonState==HIGH) {
    
     bool ver3s=verifica3sec();
@@ -172,7 +157,7 @@ void insertPositionConfirm(){
     display.setCursor(10,20);
     display.println("NUOVO MCUBE INSERITO, PUOI RILASCIARE");
     display.display();
-    delay(1000);
+    delay(5000);
 }
 
 bool insertNewOrdine(int posizione){
@@ -347,6 +332,18 @@ void foundNewmc(){
       delay(500);
 
       }
+      
+  while(buttonState==LOW){
+    Serial.println ("in attesa...");
+      buttonState = digitalRead(buttonPin);
+      delay(500);
+  }    
+  bool ver1s=verifica1sec();
+  if(ver1s==true){
+      Serial.println ("posizione inserita");
+      insertPositionConfirm();
+  }
+    
 
   }
 //display.clearDisplay();
