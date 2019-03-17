@@ -82,6 +82,7 @@ if (WiFi.status() == WL_CONNECTED) {
   digitalWrite(bluledpin,0);
   digitalWrite(ledpin,0);
   foundNewmc();
+  foundNewPromo();
   display.clearDisplay();
   display.setCursor(10,30);
   display.println("MW ID: "+codiceMW);
@@ -163,7 +164,22 @@ void insertPositionConfirm(){
     display.display();
     delay(5000);
 }
-
+void insertPromoConfirm(){
+   Serial.println("dentro insertconfirm");
+   int httpcode=0;
+   while(httpcode!=HTTP_CODE_OK){
+   httpclient.begin("http://www.heritagexperience.com/mw/index.php?option=com_marketwall&task=marketwalltask.confirmmcinsertionpromo&mwid="+codiceMW);
+   httpcode=httpclient.GET();
+   httpclient.end();
+   }
+    display.clearDisplay();
+    display.setCursor(0,10);
+    display.println("fatto");
+    display.setCursor(0,20);
+    display.println("grazie");
+    display.display();
+    delay(5000);
+}
 bool insertNewOrdine(int posizione){
     display.clearDisplay();
     display.setCursor(0,10);
@@ -374,4 +390,74 @@ void foundNewmc(){
   }
 //display.clearDisplay();
 //display.display();
+}
+void foundNewPromo(){
+
+   String valore;
+  int httpcode=0;
+  String valori[36];
+//VIENE COSTRUITO L'ARRAY DEI NUOVI MC
+  
+  while(httpcode!=HTTP_CODE_OK){
+    //Serial.println(codiceMW);
+    int bgn=httpclient.begin("http://www.heritagexperience.com/mw/index.php?option=com_marketwall&task=marketwalltask.getpromozioni&mwid="+codiceMW);
+    //Serial.println("getbgn: "+String(bgn));
+    httpcode=httpclient.GET();
+   
+    //Serial.println("httpcode: "+String(httpcode));
+    //Serial.println("getString: "+httpclient.getString());
+    valore=httpclient.getString().c_str();//MI RACCOMANDO LA CONVERSIONE IN CHAR ALTRIMENTI JSONBUFFER NON FUNZIONA...
+    
+   
+    httpclient.end();
+
+    }
+
+  int i=0;
+  
+    while(valore.length()>2){
+    int cut=valore.indexOf("}")+1;
+    valori[i]=valore.substring(valore.indexOf("{"),cut);
+    //Serial.println(valore);
+    //Serial.println(String(i)+" "+valori[i]);
+    valore.remove(0,cut);
+    i++;
+    }
+  
+//PER CIASCUN NUOVO MC VIENE ASSOCIATO UN LED E UNA SCRITTA
+  for(int j=0;j<i;j++){
+    JsonObject& root = jsonBuffer.parseObject(valori[j]);
+    //Serial.println("j:"+String(j));
+      for (JsonObject::iterator it=root.begin(); it!=root.end(); ++it) {
+      if(String(it->value.as<char*>()).substring(0,5)=="reset"){
+        resetting();  
+      }
+      digitalWrite(ledpin,1);  
+      display.clearDisplay();
+      display.setCursor(0,0);
+      display.println("PROMOZIONE!");
+     
+      display.setCursor(0,20);
+      display.println(String(it->value.as<char*>()));
+      display.display();
+      delay(500);
+
+      }
+      
+  while(buttonState==LOW){
+    Serial.println ("in attesa...");
+      buttonState = digitalRead(buttonPin);
+      delay(500);
+  }    
+  bool ver1s=verifica1sec();
+  if(ver1s==true){
+      Serial.println ("grazie");
+      insertPromoConfirm();
+  }
+    
+
+  }
+//display.clearDisplay();
+//display.display();
+  
 }

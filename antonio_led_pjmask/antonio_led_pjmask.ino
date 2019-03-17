@@ -4,7 +4,7 @@
 #include <DNSServer.h>
 #include <WiFiManager.h>         //https://github.com/tzapu/WiFiManager
 #include <ESP8266HTTPClient.h>
-#define PIN D6
+#define PIN D7
 #define NUMPIXELS 60
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
@@ -50,9 +50,14 @@ void setup()  {
 
 void loop() {
    while (WiFi.status() != WL_CONNECTED){
-    Serial.println("mancanza d connessione");
-    staticPjmask("connection_error",100);
-   
+     Serial.println("mancanza d connessione");
+      if(Showid==1){
+        Serial.println("mancanza d connessione, proseguo con static");
+         staticPjmask(Pjmaskname,Brightness);
+      }else{
+      Serial.println("mancanza d connessione");
+      staticPjmask("connection_error",100);
+      }
    
    }
   if(applicationState==1){
@@ -103,6 +108,9 @@ void playCurrentShow(){
     _speed_=(String(_speed)).toInt();
     frompjmask=String(_frompjmask);
     topjmask=String(_topjmask);
+    }else{
+      Serial.println("root is null");
+      return;
     }
   }
   
@@ -172,8 +180,8 @@ void staticPjmask(String PjmaskName, int _lumxcent){
   for (int x = 0; x < NUMPIXELS; x=x+int(100/_lumxcent)) {
       pixels.setPixelColor(x, pjmask.red, pjmask.green, pjmask.blue);
     }
-    pixels.show();
-   
+  pixels.show();
+  delay(10000);
 }
 
 void pathPjmask(String PjmaskName, int _speed, bool bidir){
