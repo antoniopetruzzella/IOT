@@ -27,9 +27,8 @@
 char ssid[] = SECRET_SSID;        // your network SSID (name)
 char pass[] = SECRET_PASS;    // your network password (use for WPA, or use as key for WEP)
 int keyIndex = 0;    
-const char * host = "192.168.0.139";
+const char * host = "192.168.1.143";//"192.168.0.139";
 const uint16_t port = 37777;
-
 int status = WL_IDLE_STATUS;
 // if you don't want to use DNS (and reduce your sketch size)
 // use the numeric IP instead of the name for the server:
@@ -40,10 +39,15 @@ int status = WL_IDLE_STATUS;
 // with the IP address and port of the server
 // that you want to connect to (port 80 is default for HTTP):
 WiFiClient client;
+int setThrusterLevelButtonPin=2;
+int sensorPin = A1; 
+float lastvalueForThruster=0.0;
 
 void setup() {
   //Initialize serial and wait for port to open:
   Serial.begin(9600);
+  pinMode(setThrusterLevelButtonPin,INPUT);
+  
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
   }
@@ -70,28 +74,42 @@ void setup() {
 
   Serial.println("\nStarting connection to server...");
   // if you get a connection, report back via serial:
-  if (client.connect(host, port)) {
-    Serial.println("connected to server");
-    // Make a HTTP request:
-    client.println("ORB:OPENMFD:0:1");
+ 
+}
+
+void changeMFD(){
+   client.println("ORB:OPENMFD:0:1");
    
-    Serial.println("comando inviato");
-    //client.println("Host: 192.168.0.139");
-    //client.println("Connection: close");
-    //client.println();
+   
+}
+
+void setThrusterLevel(float value){
+ if (client.connect(host, port)) {
+      
+  if(client.connected()){//GESTIRE TUTTE LE ECCEZIONI POSSIBILI...
+    client.println("SHIP:FOCUS:SetEngineGrpLevel:0:"+String(value));
+    Serial.println("comando inviato:SHIP:FOCUS:SetEngineGrpLevel:0:"+String(value));
   }
+  client.stop();
+ }
 }
 
 void loop() {
 
-
-while (client.available()) {
-   client.println("ship:focus:EngineGrpLevels");
-   
-  Serial.println(client.read()[0]);
- }
-
- delay(1000);
+   //client.println("SHIP:FOCUS::EngineGrpLevels");
+   //Serial.println("SHIP:FOCUS::EngineGrpLevels:"+client.read());
+ /*  if(digitalRead(setThrusterLevelButtonPin)){
+    setThrusterLevel(1);
+    Serial.println("inviato comando setThrusterLevel a Orbiter");
+   }*/
+  int analogValue=analogRead(sensorPin); 
+  float valueForThruster=float(analogValue)/1024;
+  Serial.println("valore letto;"+String(valueForThruster)+" valore precedente:"+String(lastvalueForThruster));
+  if(lastvalueForThruster!=valueForThruster){
+  setThrusterLevel(valueForThruster);
+  lastvalueForThruster=valueForThruster;
+  }
+  delay(100);
 }
 
 
