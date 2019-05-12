@@ -35,8 +35,8 @@ void loop() {
     delay(100);
     */
     
-    Keyboard.press(altKey);
-    Keyboard.press(54);
+    //Keyboard.press(altKey);
+    Keyboard.press(194);
      delay(100);
     Keyboard.releaseAll();
     //Keyboard.print("p903s42");
