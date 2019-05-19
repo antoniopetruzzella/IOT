@@ -1,5 +1,7 @@
 #include <EEPROM.h>
-#include <WiFiManager.h>   
+#include <WiFiManager.h> 
+#include <ESP8266HTTPClient.h>  
+#include <ArduinoJson.h>
 int MILLI_SLEEP_MODE_PERIOD=10000;//3600000;//UN ORA
 //int ACTUAL_CONNECTION_TIME=0;
 //int ACTUAL_IRRIGATION_TIME=0;
@@ -30,7 +32,7 @@ void setup() {
   if(WAKE_UP_COUNT>10){
     WAKE_UP_COUNT=0;
   }
-  Serial.println("WAKE_UP_COUNT DOPO LETTURA: "+String(WAKE_UP_COUNT));
+  
  
   WAKE_UP_COUNT=WAKE_UP_COUNT+1;
   Serial.println("WAKE_UP_COUNT: "+String(WAKE_UP_COUNT)+" LO CONFRONTO CON: NEXT_CONNECTION_COUNT: "+String(NEXT_CONNECTION_COUNT));
@@ -41,8 +43,13 @@ void setup() {
       EEPROM.put(WAKE_UP_COUNT_EEPROM_ADDRESS,WAKE_UP_COUNT);
       EEPROM.commit();
       WiFiManager wifiManager;
-      wifiManager.setAPCallback(configModeCallback);
-      WiFi.begin("WebPocket-E036","antonio71");
+      //wifiManager.setAPCallback(configModeCallback);
+      WiFi.mode(WIFI_STA);
+      //wifiManager.setConfigPortalTimeout(10);
+      //wifiManager.autoConnect("WebPocket-E036","antonio71");
+      int connRes = WiFi.waitForConnectResult();
+      
+      //WiFi.begin("WebPocket-E036","antonio71");
       if (WiFi.status() == WL_CONNECTED) {//SE C'E' CONNESSIONE
          Serial.println("SONO CONNESSO");        
         if(isTimeToIrrig()){ //SE E' TEMPO DI IRRIGARE
@@ -82,8 +89,7 @@ void setup() {
   Serial.println("MA PRIMA SCRIVO WAKE_UP_COUNT: "+String(WAKE_UP_COUNT));
   EEPROM.put(WAKE_UP_COUNT_EEPROM_ADDRESS,WAKE_UP_COUNT);
   EEPROM.commit();
-  EEPROM.get(WAKE_UP_COUNT_EEPROM_ADDRESS,WAKE_UP_COUNT);
-  Serial.println("E POI LO RILEGGO: "+String(WAKE_UP_COUNT));
+ 
   ESP.deepSleep(MILLI_SLEEP_MODE_PERIOD*1000);
   }
   
@@ -91,8 +97,33 @@ void setup() {
 
 }
 bool isTimeToIrrig(){
-  return true;
-  //return false;
+  HTTPClient httpclient;
+  DynamicJsonBuffer jsonBuffer; 
+  int httpcode;
+  const char* result;
+  while(httpcode!=HTTP_CODE_OK){
+    Serial.println("call: http://www.heritagexperience.com/iot/innaffiarosa.php?MILLIS_NEXT_IRRIGATION_PERIOD="+String(MILLIS_NEXT_IRRIGATION_PERIOD));
+    httpclient.begin("http://www.heritagexperience.com/iot/innaffiarosa.php?MILLIS_NEXT_IRRIGATION_PERIOD="+String(MILLIS_NEXT_IRRIGATION_PERIOD));
+    Serial.println("waiting get");                     
+    httpcode=httpclient.GET();
+    JsonObject& root = jsonBuffer.parseObject(httpclient.getString().c_str());
+    
+    
+    if(root.size()>0){
+      result=root["result"];
+      Serial.println("root returned "+String(result));  
+     }else{
+      Serial.println("root is null");
+      return false;
+    }
+  }
+  if(String(result)=="true"){
+    return true;
+  }else{
+    return false;  
+  }
+  //return true;
+  
 }
 void doIrrig(){
    Serial.println("INIZIO AD IRRIGARE");
@@ -105,9 +136,7 @@ void doIrrig(){
    Serial.println("HO FINITO D IRRIGARE, TORNO A DORMIRE");
    ESP.deepSleep(MILLI_SLEEP_MODE_PERIOD*1000);
 }
-void configModeCallback (WiFiManager *myWiFiManager) {
-ESP.deepSleep(MILLI_SLEEP_MODE_PERIOD*1000);
-}
+
 void loop() {
 
  
