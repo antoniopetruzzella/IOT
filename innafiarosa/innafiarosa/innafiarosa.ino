@@ -14,6 +14,7 @@ int MILLIS_COUNTER_FROM_LAST_IRRIG=0; //CONTATORE IN MILLIS DALL'ULTIMA IRRIGAZI
 int WAKE_UP_COUNT_EEPROM_ADDRESS=0; //INDIRIZZO EEPROM DEL VALORE DELLA VARIABILE
 int MILLIS_COUNTER_FROM_LAST_IRRIG_EEPROM_ADDRESS=5; //INDIRIZZO EEPROM DEL VALORE DELLA VARIABILE
 int POMPAPIN=D6;
+int DISPNUMBER=1;
 
 void setup() {
   // put your setup code here, to run once:
@@ -21,7 +22,8 @@ void setup() {
  Serial.begin(9600);
  Serial.println("sono sveglio");
  EEPROM.begin(10);
- pinMode(POMPAPIN,OUTPUT); 
+ pinMode(POMPAPIN,OUTPUT);
+ pinMode(A0, INPUT); 
   
  //Serial.println(ESP.getResetReason());
  /* if(ESP.getResetReason()=="External System"){
@@ -51,7 +53,8 @@ void setup() {
       
       //WiFi.begin("WebPocket-E036","antonio71");
       if (WiFi.status() == WL_CONNECTED) {//SE C'E' CONNESSIONE
-         Serial.println("SONO CONNESSO");        
+         Serial.println("SONO CONNESSO");
+              
         if(isTimeToIrrig()){ //SE E' TEMPO DI IRRIGARE
           Serial.println("WEBAPP DICE: E' TEMPO DI IRRIGARE");
           doIrrig();
@@ -68,7 +71,7 @@ void setup() {
           Serial.println("NEXT_CONNECTION_COUNT:"+String(NEXT_CONNECTION_COUNT));
           
           MILLIS_COUNTER_FROM_LAST_IRRIG=MILLIS_COUNTER_FROM_LAST_IRRIG+(NEXT_CONNECTION_COUNT*MILLI_SLEEP_MODE_PERIOD);
-           Serial.println("MILLIS_COUNTER_FROM_LAST_IRRIG DOPO FORMULA:"+String(MILLIS_COUNTER_FROM_LAST_IRRIG));
+          Serial.println("MILLIS_COUNTER_FROM_LAST_IRRIG DOPO FORMULA:"+String(MILLIS_COUNTER_FROM_LAST_IRRIG));
           EEPROM.put(MILLIS_COUNTER_FROM_LAST_IRRIG_EEPROM_ADDRESS,MILLIS_COUNTER_FROM_LAST_IRRIG);
           EEPROM.commit();
           Serial.println("MILLIS_COUNTER_FROM_LAST_IRRIG: "+String(MILLIS_COUNTER_FROM_LAST_IRRIG)+" LO CONFRONTO CON: MILLIS_NEXT_IRRIGATION_PERIOD: "+String(MILLIS_NEXT_IRRIGATION_PERIOD));
@@ -97,13 +100,14 @@ void setup() {
 
 }
 bool isTimeToIrrig(){
+  float volt=checkBatteryStatus();
   HTTPClient httpclient;
   DynamicJsonBuffer jsonBuffer; 
   int httpcode;
   const char* result;
   while(httpcode!=HTTP_CODE_OK){
-    Serial.println("call: http://www.heritagexperience.com/iot/innaffiarosa.php?MILLIS_NEXT_IRRIGATION_PERIOD="+String(MILLIS_NEXT_IRRIGATION_PERIOD));
-    httpclient.begin("http://www.heritagexperience.com/iot/innaffiarosa.php?MILLIS_NEXT_IRRIGATION_PERIOD="+String(MILLIS_NEXT_IRRIGATION_PERIOD));
+    Serial.println("call: http://www.heritagexperience.com/iot/innaffiarosaController.php?MILLIS_NEXT_IRRIGATION_PERIOD="+String(MILLIS_NEXT_IRRIGATION_PERIOD)+"&BATTERYSTATUS="+String(volt)+"&DISPNUMBER="+String(DISPNUMBER));
+    httpclient.begin("http://www.heritagexperience.com/iot/innaffiarosaController.php?MILLIS_NEXT_IRRIGATION_PERIOD="+String(MILLIS_NEXT_IRRIGATION_PERIOD)+"&BATTERYSTATUS="+String(volt)+"&DISPNUMBER="+String(DISPNUMBER));
     Serial.println("waiting get");                     
     httpcode=httpclient.GET();
     JsonObject& root = jsonBuffer.parseObject(httpclient.getString().c_str());
@@ -135,6 +139,17 @@ void doIrrig(){
    EEPROM.commit();
    Serial.println("HO FINITO D IRRIGARE, TORNO A DORMIRE");
    ESP.deepSleep(MILLI_SLEEP_MODE_PERIOD*1000);
+}
+
+float checkBatteryStatus(){
+ 
+  unsigned int raw=0;
+  float volt=0.0;
+  raw = analogRead(A0);
+  Serial.println("RAW: "+String(raw));
+  volt=raw/1023.0;
+  volt=volt*3.2;
+  return volt;
 }
 
 void loop() {

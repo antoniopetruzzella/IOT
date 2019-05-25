@@ -6,8 +6,8 @@
 #include <WiFiManager.h>         //https://github.com/tzapu/WiFiManager
 #include <ESP8266HTTPClient.h>
 
-
-
+int MILLIS_NEXT_IRRIGATION_PERIOD=10000;//10 SECONDI
+HTTPClient httpclient;
 void setup() {
     // put your setup code here, to run once:
     Serial.begin(115200);
@@ -29,9 +29,7 @@ void setup() {
         WiFi.begin("WebPocket-E036","antonio71");
     //or use this for auto generated name ESP + ChipID
     //wifiManager.autoConnect();
-
-    
-    //if you get here you have connected to the WiFi
+   //if you get here you have connected to the WiFi
     Serial.println("connected...yeey :)");
 Serial.println(WiFi.localIP()); 
     
@@ -39,10 +37,20 @@ Serial.println(WiFi.localIP());
 }
 
 void loop() {
-                   
 
+  if (WiFi.status() == WL_CONNECTED) {
     
- 
+  int httpcode;
+   while(httpcode!=HTTP_CODE_OK){
+    
+    httpclient.begin("http://www.heritagexperience.com/raspberryWS/raspberryloaddataWS.php?action=insertdata&descrizione=temperatura-camera&valueFloat=23");
+    Serial.println("waiting get");                     
+    httpcode=httpclient.GET();
+                   
+   }
+   Serial.println(httpcode);                    
+  delay(1000);
 
 
+  }
 }
