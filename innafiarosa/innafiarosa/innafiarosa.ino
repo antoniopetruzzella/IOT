@@ -1,3 +1,9 @@
+/////////////////////////////////
+//  ATTENZIONE!!!!
+//  DA COMPILARE PER SCHEDA
+// LOLIN WEMOS D1 R2 & mini
+//////////////////////////////////
+ 
 #include <EEPROM.h>
 #include <WiFiManager.h> 
 #include <ESP8266HTTPClient.h>  
