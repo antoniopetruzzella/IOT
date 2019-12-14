@@ -32,9 +32,7 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   BLEScanResults foundDevices = pBLEScan->start(scanTime, false);
-  Serial.print("Devices found: ");
-  Serial.println(foundDevices.getCount());
-  Serial.println("Scan done!");
+  
   BLEAdvertisedDevice nearestDevice;
   int majorRSSI=-9999;
   for(int i=0; i<foundDevices.getCount();i++){
@@ -53,13 +51,9 @@ void loop() {
   char *pHexNearest=BLEUtils::buildHexData(nullptr, (uint8_t*)nearestDevice.getManufacturerData().data(), nearestDevice.getManufacturerData().length()); 
   String NearestManufacturerData=pHexNearest;
   String NearestMajor=NearestManufacturerData.substring(42,44);
-  //char hexMajorValue[2];
-  //hexMajorValue[1]=NearestMajor.substring(0,1);
-  //hexMajorValue[2]=NearestMajor.substring(1,2);
-  //int NearestMajorInt=strtol(hexMajorValue,0,16);
   int NearestMajorInt=NearestMajor.toInt();
   Serial.println("NEAREST MAJOR: "+ String(NearestMajorInt));  
   
   pBLEScan->clearResults();   // delete results fromBLEScan buffer to release memory
-  delay(2000);
+  delay(500);
 }
