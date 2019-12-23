@@ -1,10 +1,9 @@
-#include "BluetoothSerial.h"
-  
-#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
-#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
-#endif
-  // Adafruit NeoPixel - Version: Latest 
+// Adafruit NeoPixel - Version: Latest 
 #include <Adafruit_NeoPixel.h>
+
+/*
+
+*/
 #define PIN 13
 #define NUMPIXELS 60
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
@@ -19,20 +18,16 @@ struct Pjmask{
 bool applicationState=1;
 int brightness=65;
 Pjmask pjmasks[4];
-int Commandshowid,Currentshowid,Brightness,Speed;
+int Showid,Brightness,Speed;
 String Pjmaskname,Frompjmask,Topjmask;
-BluetoothSerial SerialBT;
-  
-  void setup() {
-    Serial.begin(115200);
-    SerialBT.begin("ANTOESP32"); //Bluetooth device name
-    Serial.println("The device started, now you can pair it with bluetooth!");
-    pjmasks[0].nome="gufetta";pjmasks[0].red=255;pjmasks[0].green=0;pjmasks[0].blue=0;
+
+void setup() {
+Serial.begin(9600);
+  pjmasks[0].nome="gufetta";pjmasks[0].red=255;pjmasks[0].green=0;pjmasks[0].blue=0;
   pjmasks[1].nome="geco";pjmasks[1].red=0;pjmasks[1].green=255;pjmasks[1].blue=0;
   pjmasks[2].nome="gattoboy";pjmasks[2].red=0;pjmasks[2].green=0;pjmasks[2].blue=255;
   pjmasks[3].nome="connection_error";pjmasks[3].red=102;pjmasks[3].green=51;pjmasks[3].blue=0;
-  Commandshowid=0;
-  Currentshowid=0; 
+  Showid=0; 
   Pjmaskname="0";
   Frompjmask="0";
   Topjmask="0";
@@ -42,54 +37,61 @@ BluetoothSerial SerialBT;
   pixels.show();
   pixels.setBrightness(20);
   Serial.println("fine setup");
-
-  }
   
-  void loop() {
-    
-    if (SerialBT.available()) {//ENTRA QUI SOLO SE ARRIVA QUALCOSA
-      Serial.println("available");
-      Commandshowid=SerialBT.read();
-      if(Commandshowid!=10){//ESCLUDENDO IL VALORE 10 SI ESCLUDE UN VALORE CHE ARRIVA ANCHE SE NON VIENE INVIATO ALCUN COMANDO (???????)
-        Currentshowid=Commandshowid;
-        
-      }
-    }   
+}
+
+void loop() {
+    if(applicationState==1){
+
+    //fadingPjs(pjmaskname,"gufetta",_speed,200);
+    //staticPjmask("gattoboy",lumxcent);
+    //pathPjmask(pjmaskname,_speed,_bidir);
+    //fillingPjmask(pjmaskname,_speed,_bidir);
+    //deflatingPjmask(pjmaskname,_speed,_bidir);
+    //fantasy();
     playCurrentShow();
-    Serial.println(Currentshowid);
-
-    delay(500);
+ 
+ 
+  }else{
+    stopAllShows();
   }
+  delay(500);
+}
+
+void playCurrentShow(){
   
-  void playCurrentShow(){
-  
-  
+  int httpcode;
   int showid;
   String pjmaskname;
   int brightness;
   int _speed_;
   String frompjmask;
   String topjmask;
-  pjmaskname="gufetta";//String(_pjmaskname);
-  brightness=100;//(String(_brightness)).toInt();
-  _speed_=100;//(String(_speed)).toInt();
-  frompjmask="gufetta";//String(_frompjmask);
-  topjmask="gattoboy";//String(_topjmask);
-  showid=Currentshowid;
-  Pjmaskname=pjmaskname;
-  Frompjmask=frompjmask;
-  Topjmask=topjmask;
-  Brightness=brightness;
-  Speed=_speed_;
-  Serial.println("showid "+String(Currentshowid));
+  
+  Serial.println("root returned");
+  
+    showid=8;//(String(_showid)).toInt();
+    pjmaskname="gufetta";//String(_pjmaskname);
+    brightness=100;//(String(_brightness)).toInt();
+    _speed_=100;//(String(_speed)).toInt();
+    frompjmask="gufetta";//String(_frompjmask);
+    topjmask="gattoboy";//String(_topjmask);
+     
+    if(showid!=Showid || pjmaskname!=Pjmaskname || brightness!=Brightness || _speed_!=Speed || frompjmask!=Frompjmask || topjmask!= Topjmask){
 
+      Showid=showid;
+      Pjmaskname=pjmaskname;
+      Frompjmask=frompjmask;
+      Topjmask=topjmask;
+      Brightness=brightness;
+      Speed=_speed_;
+      stopAllShows();
+      Serial.println("showid "+String(showid));
 
+  }
   
   switch(showid){
 
-    case 0:
-      stopAllShows();
-      break;
     case 1:
       staticPjmask(pjmaskname,brightness);
       break;
