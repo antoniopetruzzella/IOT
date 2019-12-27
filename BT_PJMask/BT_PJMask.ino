@@ -51,7 +51,7 @@ BluetoothSerial SerialBT;
       Serial.println("available");
       Commandshowid=SerialBT.read();
       if(Commandshowid!=10){//ESCLUDENDO IL VALORE 10 SI ESCLUDE UN VALORE CHE ARRIVA ANCHE SE NON VIENE INVIATO ALCUN COMANDO (???????)
-        Currentshowid=Commandshowid;
+        Currentshowid=Commandshowid-48;
         
       }
     }   
@@ -75,7 +75,7 @@ BluetoothSerial SerialBT;
   _speed_=100;//(String(_speed)).toInt();
   frompjmask="gufetta";//String(_frompjmask);
   topjmask="gattoboy";//String(_topjmask);
-  showid=Currentshowid;
+  showid=Currentshowid;//il valore passato dal BT è aumentato di 48
   Pjmaskname=pjmaskname;
   Frompjmask=frompjmask;
   Topjmask=topjmask;
