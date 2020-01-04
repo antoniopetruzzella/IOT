@@ -244,8 +244,7 @@ void pjmaskCharacteristicWritten(BLEDevice central, BLECharacteristic characteri
   Serial.print("modificato PJmask: ");
   Serial.println(String(pjmaskCharacteristic.value()));
   Pjmaskindex=pjmaskCharacteristic.value();
- 
-  
+    
 }
 void brightnessCharacteristicWritten(BLEDevice central, BLECharacteristic characteristic) {
   Serial.print("modificata Brightness: ");
@@ -260,5 +259,5 @@ void speedCharacteristicWritten(BLEDevice central, BLECharacteristic characteris
   Serial.print("modificata Speed: ");
   Serial.println(String(speedCharacteristic.value()));
   Speed=speedCharacteristic.value();
- 
+  
 }
