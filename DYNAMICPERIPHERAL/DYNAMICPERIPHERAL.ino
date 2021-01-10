@@ -92,7 +92,10 @@ void loop() {
 
 
 void firstCharacteristicWritten(BLEDevice central, BLECharacteristic characteristic) {//QUI VIENE SETTATO LO SHOW
- 
+
+    char* val=(char*)(firstCharacteristic.value());
+    String valore =String(val);
+    Serial.println("cambiato show: "+valore);
 }
 void secondCharacteristicWritten(BLEDevice central, BLECharacteristic characteristic) {//QUI VIENE SETTATO LO USERNAME
    
